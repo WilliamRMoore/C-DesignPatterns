@@ -103,7 +103,7 @@ namespace DesignPatterns.App
 
         public void FactoryRoutine()
         {
-            ThemeFactoryEntry.run();
+            AbstractFactory.entry();
         }
     }
 }
