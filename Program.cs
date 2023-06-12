@@ -12,5 +12,5 @@ using IHost host = Host.CreateDefaultBuilder(args)
 .Build();
 var svc = ActivatorUtilities.CreateInstance<App>(host.Services);
 //svc.Entry();
-svc.BuilderRoutine();
+//svc.BuilderRoutine();
 svc.FactoryRoutine();

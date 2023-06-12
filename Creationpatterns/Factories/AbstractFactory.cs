@@ -51,30 +51,51 @@ namespace DesignPatterns.Creationpatterns.Factories
 
     public class HotDrinkMachine
     {
-        public enum AvailableDrink
-        {
-            Tea,
-            Coffee
-        }
-
-        private Dictionary<AvailableDrink, IHotDrinkFacotry> factories = new Dictionary<AvailableDrink, IHotDrinkFacotry>();
-
+        private List<Tuple<string, IHotDrinkFacotry>> factories = new();
         public HotDrinkMachine()
         {
-            foreach (AvailableDrink drink in Enum.GetValues(typeof(AvailableDrink)))
+            foreach (var type in typeof(HotDrinkMachine).Assembly.GetTypes())
             {
-                var factory = (IHotDrinkFacotry)Activator.CreateInstance
-                (
-                    Type.GetType("DesignPatterns.Creationpatterns.Factories." + Enum.GetName(typeof(AvailableDrink), drink) + "Factory")
-                );
-
-                factories.Add(drink, factory);
+                if (typeof(IHotDrinkFacotry).IsAssignableFrom(type) && !type.IsInterface)
+                {
+                    factories.Add(Tuple.Create(
+                        type.Name.Replace("Factory", string.Empty),
+                        (IHotDrinkFacotry)Activator.CreateInstance(type)
+                    ));
+                }
             }
         }
 
-        public IHotDrink MakeDrink(AvailableDrink drink, int amount)
+        public IHotDrink MakeDrink()
         {
-            return factories[drink].Prepare(amount);
+            Console.WriteLine("Available drinks: ");
+
+            for (int i = 0; i < factories.Count; i++)
+            {
+                var tuple = factories[i];
+                Console.WriteLine($"{i}: {tuple.Item1}");
+            }
+
+            while (true)
+            {
+                string input;
+
+                if ((input = Console.ReadLine()) != null &&
+                    int.TryParse(input, out int i) &&
+                    i >= 0 &&
+                    i < factories.Count
+                )
+                {
+                    Console.WriteLine("Specify Amount: ");
+                    input = Console.ReadLine();
+                    if (input != null && int.TryParse(input, out int amount) && amount > 0)
+                    {
+                        return factories[i].Item2.Prepare(amount);
+                    }
+                }
+
+                Console.WriteLine("Incorrect input, please try again.");
+            }
         }
     }
 
@@ -83,9 +104,8 @@ namespace DesignPatterns.Creationpatterns.Factories
         public static void entry()
         {
             var machine = new HotDrinkMachine();
-            var drink = machine.MakeDrink(HotDrinkMachine.AvailableDrink.Tea, 100);
+            var drink = machine.MakeDrink();
             drink.consume();
-
         }
     }
 }
